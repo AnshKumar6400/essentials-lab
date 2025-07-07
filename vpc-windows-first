@@ -1,0 +1,94 @@
+Perfect — here's how to do the exact same thing you did with a Linux EC2 instance, but using a Windows EC2 instead.
+
+🎯 Scenario:
+You're setting up a Windows EC2 instance with:
+
+Same VPC, CIDR, and key pair
+
+Same security group setup
+
+Same purpose (e.g., auto-installing a web server like IIS)
+
+✅ Step-by-Step: Same Setup Using a Windows AMI
+1. Launch EC2 Instance
+Go to EC2 > Launch Instance
+
+Choose Windows Server 2019/2022 Base AMI
+
+Select the same VPC and subnet (e.g., 10.0.0.0/24)
+
+Choose the same .pem key pair
+
+2. Use This PowerShell Script in User Data
+Under Advanced > User Data, paste:
+<powershell>
+# Install IIS (Windows Web Server)
+Install-WindowsFeature -Name Web-Server
+# Optional: Create a test HTML page
+New-Item -Path "C:\inetpub\wwwroot\index.html" -ItemType "File" -Value "<h1>Hello from Windows EC2</h1>"
+# Start the IIS service
+Start-Service W3SVC
+</powershell>
+3. Security Group Settings (Same as Before)
+Make sure the security group has:
+
+✅ Port 3389 (RDP) – to connect to Windows
+
+✅ Port 80 (HTTP) – if you’re setting up a web server
+
+4. Connect to the Instance
+After instance is running:
+
+Click "Connect" > RDP Client > Get Password
+
+Upload your .pem file
+
+Copy the Administrator password
+
+Use Remote Desktop (RDP):
+
+Host: public IP
+
+User: Administrator
+
+Password: <decrypted>
+
+5. Verify IIS is Running
+Open your browser and go to:
+
+cpp
+Copy
+Edit
+http://<EC2 Public IP>/
+You should see:
+
+csharp
+Copy
+Edit
+Hello from Windows EC2
+✅ Done!
+You’ve now done exactly the same setup on a Windows instance:
+
+Same VPC, subnet, key pair
+
+Script runs automatically
+
+IIS or any Windows service is installed
+
+Let me know if you want to set up more advanced stuff like:
+
+Running .exe installers from S3
+
+Setting custom hostname
+
+Installing Node.js or Python on Windows
+
+
+
+
+
+
+
+
+
+Ask ChatGPT
