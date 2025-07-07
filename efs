@@ -1,0 +1,36 @@
+# Connect to your EC2 instances via PuTTY (efs-1 and efs-2)
+
+# Switch to root
+sudo su
+
+# Create mount directory
+mkdir /efs
+
+# Install amazon-efs-utils (use one depending on your OS)
+yum install -y amazon-efs-utils        # For Amazon Linux
+# OR
+apt update && apt install -y amazon-efs-utils    # For Ubuntu
+
+# Mount the EFS file system (replace with your actual EFS ID and region)
+mount -t efs fs-12345678:/ /efs
+
+# If efs-utils fails, fallback to NFS mount
+mount -t nfs -o vers=4.1 fs-12345678.efs.ap-south-1.amazonaws.com:/ /efs
+
+# Verify the mount
+df -hT
+ls /efs
+
+# Create a test file
+cd /efs
+vi f1.txt
+# (Type something, then press ESC and type :wq to save and exit)
+
+# Optional: Make the mount persistent across reboots
+vi /etc/fstab
+
+# Add the following line at the bottom of /etc/fstab
+fs-12345678:/ /efs efs defaults,_netdev 0 0
+
+# Apply the changes
+mount -a
