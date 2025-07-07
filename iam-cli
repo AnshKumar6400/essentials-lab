@@ -1,0 +1,300 @@
+# AWS IAM CLI Commands Guide
+
+## Prerequisites
+
+```bash
+# Install AWS CLI
+pip install awscli
+
+# Configure AWS CLI with root account credentials
+aws configure
+# Enter your AWS Access Key ID
+# Enter your AWS Secret Access Key
+# Enter your default region (e.g., us-east-1)
+# Enter output format (json/text/table)
+```
+
+## Creating IAM Users
+
+### 1. Create First User with EC2 Full Access
+
+```bash
+# Create IAM user
+aws iam create-user --user-name testuser1
+
+# Create login profile (console password)
+aws iam create-login-profile --user-name testuser1 --password "TempPassword123!" --password-reset-required
+
+# Attach EC2 Full Access policy
+aws iam attach-user-policy --user-name testuser1 --policy-arn arn:aws:iam::aws:policy/AmazonEC2FullAccess
+
+# Verify user creation
+aws iam get-user --user-name testuser1
+
+# List attached policies
+aws iam list-attached-user-policies --user-name testuser1
+```
+
+### 2. Create Second User with S3 Full Access
+
+```bash
+# Create IAM user
+aws iam create-user --user-name testuser2
+
+# Create login profile (console password)
+aws iam create-login-profile --user-name testuser2 --password "TempPassword123!" --password-reset-required
+
+# Attach S3 Full Access policy
+aws iam attach-user-policy --user-name testuser2 --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
+
+# Verify user creation
+aws iam get-user --user-name testuser2
+
+# List attached policies
+aws iam list-attached-user-policies --user-name testuser2
+```
+
+## Creating IAM Groups
+
+### 1. Create Group with EC2 Full Access
+
+```bash
+# Create IAM group
+aws iam create-group --group-name EC2AdminGroup
+
+# Attach EC2 Full Access policy to group
+aws iam attach-group-policy --group-name EC2AdminGroup --policy-arn arn:aws:iam::aws:policy/AmazonEC2FullAccess
+
+# Verify group creation
+aws iam get-group --group-name EC2AdminGroup
+
+# List attached policies for group
+aws iam list-attached-group-policies --group-name EC2AdminGroup
+```
+
+### 2. Create User and Add to Group
+
+```bash
+# Create new user (xyz user)
+aws iam create-user --user-name xyz
+
+# Create login profile for xyz user
+aws iam create-login-profile --user-name xyz --password "TempPassword123!" --password-reset-required
+
+# Add user to group
+aws iam add-user-to-group --user-name xyz --group-name EC2AdminGroup
+
+# Verify user is in group
+aws iam get-group --group-name EC2AdminGroup
+```
+
+## Managing Users and Groups
+
+### List All Users
+
+```bash
+# List all IAM users
+aws iam list-users
+
+# Get specific user details
+aws iam get-user --user-name testuser1
+```
+
+### List All Groups
+
+```bash
+# List all IAM groups
+aws iam list-groups
+
+# Get specific group details
+aws iam get-group --group-name EC2AdminGroup
+```
+
+### Check User Permissions
+
+```bash
+# List policies attached to user
+aws iam list-attached-user-policies --user-name testuser1
+
+# List groups user belongs to
+aws iam list-groups-for-user --user-name xyz
+
+# Get user's effective permissions (simulate)
+aws iam simulate-principal-policy --policy-source-arn arn:aws:iam::ACCOUNT-ID:user/testuser1 --action-names ec2:DescribeInstances
+```
+
+## Access Key Management (for Programmatic Access)
+
+### Create Access Keys for Users
+
+```bash
+# Create access key for user
+aws iam create-access-key --user-name testuser1
+
+# List access keys for user
+aws iam list-access-keys --user-name testuser1
+
+# Delete access key (when needed)
+aws iam delete-access-key --user-name testuser1 --access-key-id AKIAIOSFODNN7EXAMPLE
+```
+
+## Testing User Permissions
+
+### Configure AWS CLI for Different Users
+
+```bash
+# Configure profile for testuser1
+aws configure --profile testuser1
+# Enter the access key and secret key for testuser1
+
+# Test EC2 permissions
+aws ec2 describe-instances --profile testuser1
+
+# Test S3 permissions (should fail for testuser1)
+aws s3 ls --profile testuser1
+
+# Configure profile for testuser2
+aws configure --profile testuser2
+# Enter the access key and secret key for testuser2
+
+# Test S3 permissions
+aws s3 ls --profile testuser2
+
+# Test EC2 permissions (should fail for testuser2)
+aws ec2 describe-instances --profile testuser2
+```
+
+## Creating Custom Policies
+
+### Create Custom EC2 Policy (Example)
+
+```bash
+# Create custom policy document
+cat > custom-ec2-policy.json << EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ec2:DescribeInstances",
+                "ec2:StartInstances",
+                "ec2:StopInstances"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+EOF
+
+# Create custom policy
+aws iam create-policy --policy-name CustomEC2Policy --policy-document file://custom-ec2-policy.json
+
+# Attach custom policy to user
+aws iam attach-user-policy --user-name testuser1 --policy-arn arn:aws:iam::ACCOUNT-ID:policy/CustomEC2Policy
+```
+
+## Password Policy Management
+
+### Set Account Password Policy
+
+```bash
+# Set password policy
+aws iam update-account-password-policy \
+    --minimum-password-length 12 \
+    --require-symbols \
+    --require-numbers \
+    --require-uppercase-characters \
+    --require-lowercase-characters \
+    --allow-users-to-change-password \
+    --max-password-age 90 \
+    --password-reuse-prevention 5
+
+# Get current password policy
+aws iam get-account-password-policy
+```
+
+## Cleanup Commands
+
+### Remove Users from Groups
+
+```bash
+# Remove user from group
+aws iam remove-user-from-group --user-name xyz --group-name EC2AdminGroup
+```
+
+### Delete Users
+
+```bash
+# Detach policies from user
+aws iam detach-user-policy --user-name testuser1 --policy-arn arn:aws:iam::aws:policy/AmazonEC2FullAccess
+
+# Delete login profile
+aws iam delete-login-profile --user-name testuser1
+
+# Delete access keys (if any)
+aws iam delete-access-key --user-name testuser1 --access-key-id AKIAIOSFODNN7EXAMPLE
+
+# Delete user
+aws iam delete-user --user-name testuser1
+```
+
+### Delete Groups
+
+```bash
+# Remove all users from group first
+aws iam remove-user-from-group --user-name xyz --group-name EC2AdminGroup
+
+# Detach policies from group
+aws iam detach-group-policy --group-name EC2AdminGroup --policy-arn arn:aws:iam::aws:policy/AmazonEC2FullAccess
+
+# Delete group
+aws iam delete-group --group-name EC2AdminGroup
+```
+
+## Useful IAM CLI Commands
+
+### Generate Credential Report
+
+```bash
+# Generate credential report
+aws iam generate-credential-report
+
+# Get credential report
+aws iam get-credential-report --output text --query 'Content' | base64 -d > credential-report.csv
+```
+
+### List All Policies
+
+```bash
+# List AWS managed policies
+aws iam list-policies --scope AWS
+
+# List customer managed policies
+aws iam list-policies --scope Local
+
+# Get policy details
+aws iam get-policy --policy-arn arn:aws:iam::aws:policy/AmazonEC2FullAccess
+```
+
+### Role Management (Bonus)
+
+```bash
+# Create IAM role
+aws iam create-role --role-name EC2-S3-Role --assume-role-policy-document file://trust-policy.json
+
+# Attach policy to role
+aws iam attach-role-policy --role-name EC2-S3-Role --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
+
+# List roles
+aws iam list-roles
+```
+
+## Notes
+
+- Replace `ACCOUNT-ID` with your actual AWS account ID
+- Use strong passwords and follow security best practices
+- Always use the principle of least privilege
+- Regularly review and audit IAM permissions
+- Use MFA (Multi-Factor Authentication) for additional security
+- Store access keys securely and rotate them regularly
