@@ -11,12 +11,8 @@ chkconfig httpd on
 
 [ec2-user@ip-10-0-0-57 ~]$ cat /var/www/html/index.html
 532
-[ec2-user@ip-10-0-0-57 ~]$ echo "524echo "524" | sudo tee /var/www/html/index.html
-> ^C
-[ec2-user@ip-10-0-0-57 ~]$ echo "524" | sudo tee /var/www/html/index.html
-^[[C524
 [ec2-user@ip-10-0-0-57 ~]$ echo "524" | sudo tee /var/www/html/index.html
 524
 [ec2-user@ip-10-0-0-57 ~]$ cat /var/www/html/index.html
 524
-[ec2-user@ip-10-0-0-57 ~]$
+
