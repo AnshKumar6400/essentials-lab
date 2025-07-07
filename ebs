@@ -1,0 +1,39 @@
+# Step 1: Become root (you've already done this)
+sudo su
+
+# Step 2: Partition the EBS volume
+fdisk /dev/xvdd
+# Inside fdisk:
+# - Press `n` to create a new partition
+# - Press `p` for primary
+# - Press `Enter` 3 times to accept defaults
+# - Press `w` to write and exit
+
+# Step 3: Notify the OS of partition changes
+partprobe
+
+# Step 4: Format the new partition with XFS or EXT4 (use only one)
+mkfs.xfs /dev/xvdd1    # or mkfs.ext4 /dev/xvdd1
+
+# Step 5: Create a mount point and mount
+mkdir /mnt/ebs1
+mount /dev/xvdd1 /mnt/ebs1
+
+# Step 6: Verify mounting
+lsblk -fs
+
+# Step 7: Create test files (optional)
+cd /mnt/ebs1
+touch file{1..5}
+ls
+
+# Step 8: Make mount persistent
+echo '/dev/xvdd1 /mnt/ebs1 xfs defaults,nofail 0 0' >> /etc/fstab
+
+# (Use "ext4" instead of "xfs" if you used mkfs.ext4 earlier)
+
+# Step 9: Apply the fstab
+mount -a
+
+# Final Check
+ls /mnt/ebs1
