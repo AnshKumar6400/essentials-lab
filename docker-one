@@ -1,0 +1,145 @@
+# HTML Portfolio Deployment on AWS EC2 Using Docker and Docker Hub
+
+## Prerequisites Setup
+
+### 1. EC2 Instance Setup
+- Create new EC2 instance with Ubuntu AMI
+- Create new key pair (.PEM file)
+- Configure security group inbound rules:
+  - Type: HTTP
+  - Source: Anywhere (0.0.0.0/0)
+  - Port: 80
+
+### 2. GitHub Repository
+- Copy the GitHub repository URL
+- Example: `https://github.com/jayakarmwr/PortfolioWebsite.git`
+
+## Commands for EC2 Instance
+
+### 1. System Updates and Git Installation
+
+```bash
+# Update system packages
+sudo apt update
+
+# Install Git
+sudo apt install git -y
+```
+
+### 2. Clone GitHub Repository
+
+```bash
+# Clone the portfolio repository
+git clone https://github.com/jayakarmwr/PortfolioWebsite.git
+
+# Navigate to the repository folder
+cd PortfolioWebsite
+```
+
+### 3. Create Dockerfile
+
+```bash
+# Create Dockerfile in the repository folder
+nano Dockerfile
+```
+
+**Dockerfile Content:**
+```dockerfile
+# Dockerfile
+FROM nginx:alpine
+COPY index.html /usr/share/nginx/html/index.html
+```
+
+### 4. Docker Installation and Setup
+
+```bash
+# Install Docker
+sudo apt install docker.io -y
+
+# Start Docker service
+sudo systemctl start docker
+
+# Enable Docker to start on boot
+sudo systemctl enable docker
+
+# Add current user to docker group (optional)
+sudo usermod -a -G docker $USER
+```
+
+### 5. Build and Push Docker Image
+
+```bash
+# Build Docker image
+sudo docker build -t florence8874/portfolio .
+
+# Login to Docker Hub (if pushing to Docker Hub)
+sudo docker login
+
+# Push image to Docker Hub
+sudo docker push florence8874/portfolio
+```
+
+### 6. Run Docker Container
+
+```bash
+# Pull the image from Docker Hub
+sudo docker pull florence8874/portfolio
+
+# Run the container with port mapping
+sudo docker run -d -p 80:80 florence8874/portfolio
+```
+
+### 7. Verify Deployment
+
+```bash
+# Check running containers
+sudo docker ps
+
+# Check Docker images
+sudo docker images
+
+# Test the application
+curl http://localhost
+```
+
+## Access the Portfolio
+
+- Open web browser
+- Navigate to: `http://[EC2-PUBLIC-IP-ADDRESS]`
+- Your HTML portfolio should be accessible
+
+## Additional Useful Commands
+
+```bash
+# Stop a running container
+sudo docker stop <container_id>
+
+# Remove a container
+sudo docker rm <container_id>
+
+# View container logs
+sudo docker logs <container_id>
+
+# Execute commands inside running container
+sudo docker exec -it <container_id> /bin/bash
+
+# Remove Docker image
+sudo docker rmi florence8874/portfolio
+```
+
+## Project Structure
+
+```
+PortfolioWebsite/
+├── index.html
+├── Dockerfile
+└── other portfolio files...
+```
+
+## Notes
+
+- The Dockerfile uses `nginx:alpine` as the base image for lightweight deployment
+- Port 80 is mapped to make the web server accessible via HTTP
+- The portfolio is served using Nginx web server
+- Security group must allow HTTP traffic on port 80
+- Make sure Docker Hub repository name matches your Docker Hub username
