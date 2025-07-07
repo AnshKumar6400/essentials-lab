@@ -1,0 +1,67 @@
+# Docker Commands from EC2 Experiment
+
+## Installing Docker on Amazon Linux EC2 Instance
+
+```bash
+# Update the system packages
+sudo yum update -y
+
+# Install Docker
+sudo yum install docker -y
+
+# Start Docker service
+sudo systemctl start docker
+
+# Enable Docker to start on boot
+sudo systemctl enable docker
+
+# Add current user to docker group (optional - to run docker without sudo)
+sudo usermod -a -G docker ec2-user
+```
+
+## Docker Commands for Nginx
+
+```bash
+# Pull the nginx image from Docker Hub
+sudo docker pull nginx
+
+# Run nginx container with port mapping
+sudo docker run -d -p 80:80 nginx
+
+# List running containers
+sudo docker ps
+
+# Access the container to modify files
+sudo docker exec -it <container_id> /bin/bash
+
+# Navigate to nginx web directory (inside container)
+cd /usr/share/nginx/html
+
+# Edit the index.html file using nano
+nano index.html
+```
+
+## Additional Useful Docker Commands
+
+```bash
+# List all containers (running and stopped)
+sudo docker ps -a
+
+# Stop a running container
+sudo docker stop <container_id>
+
+# Remove a container
+sudo docker rm <container_id>
+
+# List Docker images
+sudo docker images
+
+# Remove a Docker image
+sudo docker rmi <image_id>
+```
+
+## Notes
+- The experiment shows Docker being installed on an Amazon Linux EC2 instance
+- Nginx was pulled and run as a Docker container
+- Port 80 was mapped to make the web server accessible via the EC2 instance's public IP
+- The default nginx index.html page was modified using nano editor
